@@ -42,7 +42,10 @@ class Build_network(object):
 
     def layer_fc(self,in_,layer):
         return tf.matmul(in_,self.variables[self.name+'/'+layer+'/w:0'])+ \
-                             self.variables[self.name+'/'+layer+'/b:0']    
+                             self.variables[self.name+'/'+layer+'/b:0']
+    
+    def layer_conv(self,in_,layer):
+        return None
 
     def create_variable(self,in_dim,out_dim,name):
         with tf.name_scope(name):

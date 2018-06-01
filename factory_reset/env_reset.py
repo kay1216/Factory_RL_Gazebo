@@ -5,7 +5,7 @@ import math
 import commands
 from env_settings import env_config
 
-#check '$roscore & rosrun gazebo_ros gazebo'
+##check '$roscore & rosrun gazebo_ros gazebo'
 
 class env_reset(object):
     def __init__(self):

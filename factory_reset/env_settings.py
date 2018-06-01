@@ -2,7 +2,7 @@ import os
 
 class env_settings(object):
     def __init__(self):
-        self.gazebo_model_path = os.path.dirname(os.path.realpath(__file__))+'/models/'
+        self.gazebo_model_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))+'/mlcs_sim/description/meshes/'
         self.tool_pop_desired = 7 #Desired total machine tool population
 
         self.floor_list = ['blue', 'darkgrey', 'darkred', 'green', 'lightgrey', 'urethane']

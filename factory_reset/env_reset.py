@@ -42,13 +42,13 @@ class env_reset(object):
         x = np.random.randint(self.x_length, size=self.tool_pop_desired)
         y = np.random.randint(self.y_length, size=self.tool_pop_desired) 
 
-        subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + self.floor_list[int(floor_choose)]+'_floor/model.sdf -sdf -model floor -y {0} -x {1}'.format(0,0), shell=True)
+        subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path +'buildings/'+ self.floor_list[int(floor_choose)]+'_floor/model.sdf -sdf -model floor -y {0} -x {1}'.format(0,0), shell=True)
         
-        subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + self.wall_list[int(wall_choose)]+'_wall/model.sdf -sdf -model wall -y {0} -x {1}'.format(0,0), shell=True)
+        subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path +'buildings/'+ self.wall_list[int(wall_choose)]+'_wall/model.sdf -sdf -model wall -y {0} -x {1}'.format(0,0), shell=True)
         
         for i in range(0,self.tool_pop_desired):
             tool_choose = math.floor(np.random.random(1)*(self.tool_num))
-            subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + self.tool_list[int(tool_choose)]+'/model.sdf -sdf -model tool{0} -y {1} -x {2}'.format(str(i+1),x[i],y[i]), shell=True)
+            subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path +'buildings/'+ self.tool_list[int(tool_choose)]+'/model.sdf -sdf -model tool{0} -y {1} -x {2}'.format(str(i+1),x[i],y[i]), shell=True)
             #self.spawn_check(i+1)
         
         print('-'*50 +'\n Randomized environment model set done.')
@@ -64,7 +64,10 @@ class env_reset(object):
 
     def gazebo_warmup(self):
         for i in range(0, self.tool_num):
-            subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + self.tool_list[i] +'/model.sdf -sdf -model warmup_tool{0} -y 0 -x 0'.format(i+1), shell=True)
+            subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path +'buildings/'+ self.tool_list[i] +'/model.sdf -sdf -model warmup_tool{0} -y 0 -x 0'.format(i+1), shell=True)
         time.sleep(60)
         for i in range(0, self.tool_num):
             subprocess.call('rosservice call gazebo/delete_model \'{model_name: warmup_tool'+str(i+1)+'}\'', shell=True)
+
+
+        

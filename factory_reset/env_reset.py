@@ -65,7 +65,7 @@ class env_reset(object):
     def gazebo_warmup(self):
         for i in range(0, self.tool_num):
             subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + self.tool_list[i] +'/model.sdf -sdf -model warmup_tool{0} -y 0 -x 0'.format(i+1), shell=True)
-        time.sleep(60)
+        time.sleep(30)
         for i in range(0, self.tool_num):
             subprocess.call('rosservice call gazebo/delete_model \'{model_name: warmup_tool'+str(i+1)+'}\'', shell=True)
 

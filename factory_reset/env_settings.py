@@ -13,8 +13,8 @@ class env_settings(object):
         self.wall_texture_num = len(self.wall_list) #Number of the wall type
         self.tool_num = len(self.tool_list) #Number of the machine tool type
 
-        self.x_length = 25 #Factory x direction length
-        self.y_length = 25 #Factory y direction length
+        self.x_length = 20 #Population area x direction length
+        self.y_length = 20 #Population area y direction length
 
 
 env_config = env_settings()

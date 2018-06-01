@@ -3,6 +3,6 @@ from tqdm import tqdm
 
 env_reset().gazebo_warmup()
 
-for i in tqdm(range(0,10)):
+for i in tqdm(range(0,5)):
     env_reset().rand_deploy()
     env_reset().rand_remove()

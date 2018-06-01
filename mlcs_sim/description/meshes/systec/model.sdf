@@ -15,7 +15,7 @@
         <cast_shadows>false</cast_shadows>
         <geometry>
           <mesh>
-            <uri>file://systec.dae</uri>
+            <uri>/home/jinhojeong/Documents/Factory_Simulation_Gazebo/mlcs_sim/description/meshes/systec/systec.dae</uri>
           </mesh>
         </geometry>
       </visual>

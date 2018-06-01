@@ -14,7 +14,7 @@
       <visual name="visual">
         <cast_shadows>false</cast_shadows>
         <geometry>
-          <mesh filename="package://description/meshes/systec/systec.dae" />
+          <mesh filename="systec.dae" />
         </geometry>
       </visual>
     </link>

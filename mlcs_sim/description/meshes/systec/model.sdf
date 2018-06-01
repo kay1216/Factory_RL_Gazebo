@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
-  <model name="lathe">
+  <model name="systec">
     <static>true</static>
     <link name="link">
       <pose>0 0 0.2 0 0 0</pose>
@@ -14,7 +14,9 @@
       <visual name="visual">
         <cast_shadows>false</cast_shadows>
         <geometry>
-          <mesh filename="systec.dae" />
+          <mesh>
+            <uri>file://systec.dae</uri>
+          </mesh>
         </geometry>
       </visual>
     </link>

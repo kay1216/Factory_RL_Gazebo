@@ -14,7 +14,9 @@
       <visual name="visual">
         <cast_shadows>false</cast_shadows>
         <geometry>
-          <mesh filename="lathe.dae" />
+          <mesh>
+            <uri>file://lathe.dae</uri>
+          </mesh>
         </geometry>
       </visual>
     </link>

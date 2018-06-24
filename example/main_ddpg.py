@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
         cumulated_reward = 0 #Should going forward give more reward then L/R ?
 
-        ranges,sonars,rgb,depth = env.reset()
+        ranges0,sonars0,rgb0,depth0 = env.reset()
 
         if ddpg.epsilon > 0.05:
             ddpg.epsilon *= epsilon_discount
@@ -60,10 +60,25 @@ if __name__ == '__main__':
         for i in range(config.max_step):
 
             # Pick an action based on the current state
-            action = ddpg.chooseAction(ranges,sonars,rgb,depth)
+            action = ddpg.chooseAction(ranges0,sonars0,rgb0,depth0)
 
             # Execute the action and get feedback
-            observation, reward, done, info = env.step(action)
+            ranges1,sonars1,rgb1,depth1,reward,done,info = env.step(action)
+            
+            memory.add({
+                'lidar0':ranges0,
+                'sonar0':sonars0,
+                'rgb0':rgb0,
+                'depth0':depth0,
+                'lidar1':ranges1,
+                'sonar1':sonars1,
+                'rgb1':rgb1,
+                'depth1':depth1,
+                'action0':action,
+                'reward':reward,
+                'done':done
+            })
+
             cumulated_reward += reward
 
             if highest_reward < cumulated_reward:
@@ -72,7 +87,16 @@ if __name__ == '__main__':
             #nextState = ''.join(map(str, observation))
 
             batch=memory.batch()
-            ddpg.learn(ranges0,sonars0,rgb0,depth0,ranges1,sonars1,rgb1,depth1,action,reward)
+            ddpg.learn( \
+                batch['lidar0'], \
+                batch['sonar0'], \
+                batch['rgb0'], \
+                batch['depth0'], \
+                batch['lidar1'], \
+                batch['sonar1'], \
+                batch['rgb1'], \
+                batch['depth1'], \
+                action,reward)
 
             env._flush(force=True)
 

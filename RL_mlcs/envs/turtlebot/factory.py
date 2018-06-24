@@ -93,7 +93,7 @@ class factoryEnv(gazebo_env.GazeboEnv):
         except (rospy.ServiceException) as e:
             print ("/gazebo/pause_physics service call failed")
 
-        ranges,sonars,rgb,depth,done = self.wrap_observation(lidar,sonar_front,sonar_rear,sonar_left,sonar_right,rgb,depth)
+        ranges,sonars,rgb,depth,done = self.wrap_observation(lidar,5,sonar_front,sonar_rear,sonar_left,sonar_right,rgb,depth)
 
         if not done:
             if action == 0:
@@ -103,7 +103,7 @@ class factoryEnv(gazebo_env.GazeboEnv):
         else:
             reward = -200
 
-        return state, reward, done, {}
+        return ranges,sonars,rgb,depth,reward,done,{}
 
     def _reset(self):
 

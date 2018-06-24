@@ -6,8 +6,9 @@ import numpy
 import random
 import time
 
-from module import ddpg
-from module import liveplot
+from module import ddpg, replay, liveplot
+
+from ddpg_config import config
 
 def render():
     render_skip = 0 #Skip first X episodes.
@@ -21,16 +22,18 @@ def render():
 
 if __name__ == '__main__':
 
-    env = gym.make('test-v0')
+    env = gym.make('factory-v0')
 
     outdir = '/tmp/gazebo_gym_experiments'
     env = gym.wrappers.Monitor(env, outdir, force=True)
+    env.action_space=3
     plotter = liveplot.LivePlot(outdir)
 
     last_time_steps = numpy.ndarray(0)
 
-    ddpg = ddpg.DDPG(actions=range(env.action_space.n),
-                    alpha=0.2, gamma=0.8, epsilon=0.9)
+    ddpg = ddpg.DDPG(config)
+
+    memory = replay.Replay(config.max_buffer, config.batch_size)
 
     initial_epsilon = ddpg.epsilon
 
@@ -40,24 +43,24 @@ if __name__ == '__main__':
     total_episodes = 10000
     highest_reward = 0
 
-    for x in range(total_episodes):
+    for x in range(config.max_episode):
         done = False
 
         cumulated_reward = 0 #Should going forward give more reward then L/R ?
 
-        observation = env.reset()
+        ranges,sonars,rgb,depth = env.reset()
 
         if ddpg.epsilon > 0.05:
             ddpg.epsilon *= epsilon_discount
 
         #render() #defined above, not env.render()
 
-        state = ''.join(map(str, observation))
+        #state = ''.join(map(str, observation))
 
-        for i in range(1500):
+        for i in range(config.max_step):
 
             # Pick an action based on the current state
-            action = ddpg.chooseAction(state)
+            action = ddpg.chooseAction(ranges,sonars,rgb,depth)
 
             # Execute the action and get feedback
             observation, reward, done, info = env.step(action)
@@ -66,9 +69,10 @@ if __name__ == '__main__':
             if highest_reward < cumulated_reward:
                 highest_reward = cumulated_reward
 
-            nextState = ''.join(map(str, observation))
+            #nextState = ''.join(map(str, observation))
 
-            ddpg.learn(state, action, reward, nextState)
+            batch=memory.batch()
+            ddpg.learn(ranges0,sonars0,rgb0,depth0,ranges1,sonars1,rgb1,depth1,action,reward)
 
             env._flush(force=True)
 

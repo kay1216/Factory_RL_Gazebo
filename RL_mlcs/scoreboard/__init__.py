@@ -14,4 +14,10 @@ add_task(
     summary='Obstacle avoidance in a Circuit.',
 )
 
+add_task(
+    id='factory-v0',
+    group='gazebo',
+    summary='Obstacle avoidance in a Factory.',
+)
+
 registry.finalize()

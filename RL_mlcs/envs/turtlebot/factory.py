@@ -188,6 +188,7 @@ class factoryEnv(gazebo_env.GazeboEnv):
         self.state_prev = state
         return state, reward, done, {}
 
+        print("12839712983712894698124698127489127489127489172894712984721894791284798127489127489127489127498127489127489172894")
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             self.pause()

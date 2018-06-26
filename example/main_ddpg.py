@@ -70,6 +70,7 @@ if __name__ == '__main__':
 
             # Execute the action and get feedback
             state1,reward,done,info = env.step(action)
+            print('action:',action,'  Done:',done)
             experience={
                 'vector0':state0['vector'],
                 'rgbd0':state0['rgbd'],

@@ -4,8 +4,9 @@ import RL_mlcs
 import time
 import numpy
 import random
-import time
+import math
 
+from env_reset import env_reset
 from module import qlearn
 from module import liveplot
 
@@ -23,6 +24,8 @@ if __name__ == '__main__':
 
     env = gym.make('test-v0')
 
+    env_reset().gazebo_warmup()
+    
     outdir = '/tmp/gazebo_gym_experiments'
     env = gym.wrappers.Monitor(env, outdir, force=True)
     plotter = liveplot.LivePlot(outdir)
@@ -47,6 +50,8 @@ if __name__ == '__main__':
 
         observation = env.reset()
 
+        env_reset().rand_deploy()
+        
         if qlearn.epsilon > 0.05:
             qlearn.epsilon *= epsilon_discount
 
@@ -77,13 +82,14 @@ if __name__ == '__main__':
             else:
                 last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
                 break
-
+        
         if x%100==0:
             plotter.plot(env)
 
         m, s = divmod(int(time.time() - start_time), 60)
         h, m = divmod(m, 60)
         print ("EP: "+str(x+1)+" - [alpha: "+str(round(qlearn.alpha,2))+" - gamma: "+str(round(qlearn.gamma,2))+" - epsilon: "+str(round(qlearn.epsilon,2))+"] - Reward: "+str(cumulated_reward)+"     Time: %d:%02d:%02d" % (h, m, s))
+
 
     #Github table content
     print ("\n|"+str(total_episodes)+"|"+str(qlearn.alpha)+"|"+str(qlearn.gamma)+"|"+str(initial_epsilon)+"*"+str(epsilon_discount)+"|"+str(highest_reward)+"| PICTURE |")

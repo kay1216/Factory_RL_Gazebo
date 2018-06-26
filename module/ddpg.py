@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import copy
 
 class DDPG:
     def __init__(self, config):
@@ -9,16 +10,11 @@ class DDPG:
         else:
             sess_config=None
         self.epsilon=0.4
-        self.state_dim=config.state_dim
         self.action_dim=config.action_dim
-        self.lidar_dim=config.lidar_dim
-        self.lidar_dim[0]=-1
-        self.sonar_dim=config.sonar_dim
-        self.sonar_dim[0]=-1
-        self.rgb_dim=config.rgb_dim
-        self.rgb_dim[0]=-1
-        self.depth_dim=config.depth_dim
-        self.depth_dim[0]=-1
+        self.vector_dim=copy.copy(config.vector_dim)
+        self.vector_dim[0]=-1
+        self.rgbd_dim=copy.copy(config.rgbd_dim)
+        self.rgbd_dim[0]=-1
         self.gamma=tf.constant(config.gamma,dtype=tf.float32,name='gamma')
         self.sess=tf.Session(config=sess_config)
         self.var_init=tf.global_variables_initializer()
@@ -72,50 +68,42 @@ class DDPG:
         self.a_scale,self.a_mean=self.sess.run(
             [self.actor_net.a_scale,self.actor_net.a_mean])
 
-    def chooseAction(self,lidar,sonar,rgb,depth):
-        action=self.sess.run(self.actor_net.out_before_activation, \
-            feed_dict={self.actor_net.state_lidar:lidar, \
-                       self.actor_net.state_sonar:sonar, \
-                       self.actor_net.state_rgb:rgb, \
-                       self.actor_net.state_depth:depth})
-        action=self.a_scale* \
-               np.tanh(action+self.epsilon*np.random.randn(1,self.action_dim))+ \
-               self.a_mean
-        return action
+    def chooseAction(self,state):
+        state_vector=np.reshape(state['vector'],[1,-1])
+        state_rgbd=np.reshape(state['rgbd'],[1,480,640,7])
+        action=self.actor_net.evaluate(state_vector,state_rgbd)
+        # action=self.sess.run(self.actor_net.out_before_activation, \
+        #     feed_dict={self.actor_net.state_vector:state_vector, \
+        #                self.actor_net.state_rgbd:state_rgbd})
+        # action=self.a_scale* \
+        #        np.tanh(action+self.epsilon*np.random.randn(1,self.action_dim))+ \
+        #        self.a_mean
+        action=action+self.epsilon*np.random.randn(1,self.action_dim)
+        return np.reshape(action,[self.action_dim])
 
-    def learn(self, batch):
-        lidar0=np.reshape(batch['lidar0'],self.lidar_dim)
-        sonar0=np.reshape(batch['sonar0'],self.sonar_dim)
-        rgb0=np.reshape(batch['rgb0'],self.rgb_dim)
-        depth0=np.reshape(batch['depth0'],self.depth_dim)
-        lidar1=np.reshape(batch['lidar1'],self.lidar_dim)
-        sonar1=np.reshape(batch['sonar1'],self.sonar_dim)
-        rgb1=np.reshape(batch['rgb1'],self.rgb_dim)
-        depth1=np.reshape(batch['depth1'],self.depth_dim)
+    def learn(self,batch):
+        vector0=np.reshape(batch['vector0'],self.vector_dim)
+        rgbd0=np.reshape(batch['rgbd0'],self.rgbd_dim)
+        vector1=np.reshape(batch['vector1'],self.vector_dim)
+        rgbd1=np.reshape(batch['rgbd1'],self.rgbd_dim)
         action0=np.reshape(batch['action0'],[-1,self.action_dim])
         reward=np.reshape(batch['reward'],[-1,1])
         done=np.reshape(batch['done'],[-1,1])
-        target_action=self.actor_target.evaluate(lidar1,sonar1,rgb1,depth1)
-        target_q=self.critic_target.evaluate(lidar1,sonar1,rgb1,depth1,action=target_action)
+        target_action=self.actor_target.evaluate(vector1,rgbd1)
+        target_q=self.critic_target.evaluate(vector1,rgbd1,action=target_action)
         self.sess.run(self.update_critic, \
-                      feed_dict={self.critic_net.state_lidar:lidar0, \
-                                 self.critic_net.state_sonar:sonar0, \
-                                 self.critic_net.state_rgb:rgb0, \
-                                 self.critic_net.state_depth:depth0, \
+                      feed_dict={self.critic_net.state_vector:vector0, \
+                                 self.critic_net.state_rgbd:rgbd0, \
                                  self.critic_net.action:action0, \
                                  self.reward:reward, \
                                  self.target_q:target_q, \
                                  self.done:done})
         self.sess.run(self.update_actor, \
-                      feed_dict={self.critic_net.state_lidar:lidar0, \
-                                 self.critic_net.state_sonar:sonar0, \
-                                 self.critic_net.state_rgb:rgb0, \
-                                 self.critic_net.state_depth:depth0, \
+                      feed_dict={self.critic_net.state_vector:vector0, \
+                                 self.critic_net.state_rgbd:rgbd0, \
                                  self.critic_net.action:action0, \
-                                 self.actor_net.state_lidar:lidar0, \
-                                 self.actor_net.state_sonar:sonar0, \
-                                 self.actor_net.state_rgb:rgb0, \
-                                 self.actor_net.state_depth:depth0})
+                                 self.actor_net.state_vector:vector0, \
+                                 self.actor_net.state_rgbd:rgbd0})
         self.sess.run(self.assign_target_soft)
 
     def reset(self):
@@ -140,74 +128,65 @@ class Build_network(object):
     def __init__(self,sess,config,name):
         self.name=name
         self.sess=sess
-        layers=config.layers
+        layers=copy.copy(config.layers)
         self.trainable=False if name.split('_')[1]=='target' else True
         with tf.name_scope(name):
-            self.state_lidar=tf.placeholder(tf.float32,config.lidar_dim)
-            self.state_sonar=tf.placeholder(tf.float32,config.sonar_dim)
-            self.state_rgb=tf.placeholder(tf.float32,config.rgb_dim)
-            self.state_depth=tf.placeholder(tf.float32,config.depth_dim)
-            layers['output']=[[layers['merge'][-1][-1],1]]
+            self.state_vector=tf.placeholder(tf.float32,config.vector_dim)
+            self.state_rgbd=tf.placeholder(tf.float32,config.rgbd_dim)
+            layers['merge'][0][0]= \
+                    layers['rgbd'][-1][-1]* \
+                    config.rgbd_dim[1]* \
+                    config.rgbd_dim[2]/ \
+                    2**(2*len(layers['rgbd']))+ \
+                    layers['vector'][-1][-1]
             if name[0]=='a':
                 # config.action_dim=len(config.action_bounds[0])
                 self.a_scale=tf.subtract(
                     config.action_bounds[0],config.action_bounds[1])/2.0
                 self.a_mean=tf.add(
                     config.action_bounds[0],config.action_bounds[1])/2.0
-                layers['output'][0][1]=config.action_dim
             else:
                 layers['merge'][0][0]+=config.action_dim
                 self.action=tf.placeholder(tf.float32,[None,config.action_dim])
             for item in layers.keys():
                 for idx,shape in enumerate(layers[item]):
                     self.create_variable(shape,item+str(idx))
+            if name[0]=='c':
+                self.create_variable([layers['merge'][-1][-1],1],'output')
+            else:
+                self.create_variable([layers['merge'][-1][-1],config.action_dim],'output')
             self.var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,name)
             self.variables={var.name:var for var in self.var_list}
-            out_lidar=self.state_lidar
-            for layer in range(layers['lidar']):
-                out_lidar=self.fc(out_lidar,'lidar'+str(layer))
-            out_sonar=self.state_sonar
-            for layer in range(layers['sonar']):
-                out_sonar=self.fc(out_sonar,'sonar'+str(layer))
-            out_rgb=self.state_rgb
-            for layer in range(layers['rgb']):
-                out_rgb=self.conv(out_rgb,'rgb'+str(layer))
-            out_rgb=tf.reshape(out_rgb, \
+            out_vector=self.state_vector
+            for layer in range(len(layers['vector'])):
+                out_vector=self.fc(out_vector,'vector'+str(layer))
+            out_rgbd=self.state_rgbd
+            for layer in range(len(layers['rgbd'])):
+                out_rgbd=self.conv(out_rgbd,'rgbd'+str(layer))
+            out_rgbd=tf.reshape(out_rgbd, \
                 [
                     -1,
-                    layers['rgb'][-1][-1]* \
-                    config.rgb_dim[1]* \
-                    config.rgb_dim[2]/ \
-                    2**(2*len(layers['rgb']))
+                    layers['rgbd'][-1][-1]* \
+                    config.rgbd_dim[1]* \
+                    config.rgbd_dim[2]/ \
+                    2**(2*len(layers['rgbd']))
                 ])
-            out_depth=self.state_depth
-            for layer in range(layers['depth']):
-                out_depth=self.conv(out_depth,'depth'+str(layer))
-            out_depth=tf.reshape(out_depth, \
-                [
-                    -1,
-                    layers['depth'][-1][-1]* \
-                    config.depth_dim[1]* \
-                    config.depth_dim[2]/ \
-                    2**(2*len(layers['depth']))
-                ])
-            out_=tf.concat([out_lidar,out_sonar,out_rgb,out_depth],1) \
-                if name[0]=='c' else \
-                tf.concat([out_lidar,out_sonar,out_rgb,out_depth,self.action],1)
-            for layer in range(layers['merge']):
-                out_=self.fc(out_,'fc'+str(layer))
+            out_=tf.concat([out_vector,out_rgbd],1)
+            if name[0]=='c':
+                out_=tf.concat([out_,self.action],1)
+            for layer in range(len(layers['merge'])):
+                out_=self.fc(out_,'merge'+str(layer))
+            out_=tf.matmul(out_,self.variables[self.name+'/output/w:0'])
             if name[0]=='a':
                 self.out_before_activation=out_
                 self.out_=tf.multiply(tf.tanh(out_),self.a_scale)+self.a_mean
             else:
                 self.out_=out_
 
-    def evaluate(self,lidar,sonar,rgb,depth,action=None):
+    def evaluate(self,vector,rgbd,action=None):
         feed_dict={
-                self.state_lidar:lidar,
-                self.state_sonar:sonar,
-                self.state_rgb:rgb,
-                self.state_depth:depth}
+                self.state_vector:vector,
+                self.state_rgbd:rgbd}
         if self.name[0]=='c':
             feed_dict[self.action]=action
         return self.sess.run(self.out_,feed_dict=feed_dict)    
@@ -236,7 +215,7 @@ class Build_network(object):
                 tf.Variable( \
                     tf.random_normal(shape,stddev=stddev),name='w',trainable=self.trainable)
                 tf.Variable( \
-                    tf.random_normal(shape[1],stddev=stddev),name='b',trainable=self.trainable)
+                    tf.random_normal([shape[1]],stddev=stddev),name='b',trainable=self.trainable)
             else:
                 stddev=1/np.sqrt(shape[0]*shape[1]*shape[2])
                 tf.Variable( \

@@ -32,8 +32,8 @@ class testEnv(gazebo_env.GazeboEnv):
 
     def discretize_observation(self,lidar,new_ranges,sonar_front,sonar_rear,sonar_left,sonar_right):
         discretized_ranges = []
-        min_range = 0.45
-        min_sonar_range = 0.3
+        min_range = 0.2
+        min_sonar_range = 0.15
         done = False
         mod = len(lidar.ranges)/new_ranges
         for i, item in enumerate(lidar.ranges):
@@ -70,43 +70,43 @@ class testEnv(gazebo_env.GazeboEnv):
 
         if action == 0: #FORWARD
             vel_cmd = Twist()
-            vel_cmd.linear.x = 0.1
+            vel_cmd.linear.x = 0.3
             vel_cmd.linear.y = 0.0
             vel_cmd.angular.z = 0.0
             self.vel_pub.publish(vel_cmd)
         elif action == 1: #BACKWARD
             vel_cmd = Twist()
-            vel_cmd.linear.x = 0.1
+            vel_cmd.linear.x = 0.3
             vel_cmd.linear.y = 0.0
             vel_cmd.angular.z = 0.0
             self.vel_pub.publish(vel_cmd)    
         elif action == 2: #LEFT
             vel_cmd = Twist()
             vel_cmd.linear.x = 0.0
-            vel_cmd.linear.y = 0.1
+            vel_cmd.linear.y = 0.3
             vel_cmd.angular.z = 0.0
             self.vel_pub.publish(vel_cmd)
         elif action == 3: #RIGHT
             vel_cmd = Twist()
             vel_cmd.linear.x = 0.0
-            vel_cmd.linear.y = -0.1
+            vel_cmd.linear.y = -0.3
             vel_cmd.angular.z = 0.0
             self.vel_pub.publish(vel_cmd)
         elif action == 4: #LEFT_FORWARD
             vel_cmd = Twist()
             vel_cmd.linear.x = 0.0
             vel_cmd.linear.y = 0.0
-            vel_cmd.angular.z = 0.1
+            vel_cmd.angular.z = 0.3
             self.vel_pub.publish(vel_cmd)
         elif action == 5: #RIGHT_FORWARD
             vel_cmd = Twist()
             vel_cmd.linear.x = 0.0
             vel_cmd.linear.y = 0.0
-            vel_cmd.angular.z = -0.1
+            vel_cmd.angular.z = -0.3
             self.vel_pub.publish(vel_cmd)
 
-        lidar = None
-        while lidar is None:
+        sonar_front = None
+        while sonar_front is None:
             try:
                 lidar = rospy.wait_for_message('/scan_unified', LaserScan, timeout=5)
                 sonar_front = rospy.wait_for_message('/sonar_front', Range, timeout=5)
@@ -158,8 +158,8 @@ class testEnv(gazebo_env.GazeboEnv):
             print ("/gazebo/unpause_physics service call failed")
 
         #read lidar data
-        lidar = None
-        while lidar is None:
+        sonar_front = None
+        while sonar_front is None:
             try:
                 lidar = rospy.wait_for_message('/scan_unified', LaserScan, timeout=5)
                 sonar_front = rospy.wait_for_message('/sonar_front', Range, timeout=5)

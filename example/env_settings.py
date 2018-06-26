@@ -5,11 +5,12 @@ class env_settings(object):
         
         self.gazebo_model_path = os.path.abspath(os.path.join(__file__, os.pardir))+'/../models/'
         self.tool_pop_desired = 5 #Desired total machine tool population
-        self.lathe_num = 10
-        self.systec_num = 10
+        self.lathe_num = 7
+        self.systec_num = 7
+        self.cnc_num = 7
         self.floor_list = ['blue', 'darkgrey', 'darkred', 'green', 'lightgrey', 'urethane']
         self.wall_list = ['brownbrick', 'concrete', 'grey', 'oldbrick', 'redbrick']
-        self.tool_list = [('lathe',10), ('systec',10)]
+        self.tool_list = [('lathe',7), ('systec',7), ('cnc',7)]
 
         self.floor_texture_num = len(self.floor_list) #Number of the floor type
         self.wall_texture_num = len(self.wall_list) #Number of the wall type

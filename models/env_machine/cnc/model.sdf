@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
-  <model name="systec">
+  <model name="cnc">
     <static>true</static>
     <link name="link">
       <pose>0 0 0.19 0 0 0</pose>
@@ -22,7 +22,7 @@
         <cast_shadows>false</cast_shadows>
         <geometry>
           <mesh>
-            <uri>model://env_machine/systec/systec.dae</uri>
+            <uri>model://env_machine/cnc/cnc.dae</uri>
           </mesh>
         </geometry>
       </visual>

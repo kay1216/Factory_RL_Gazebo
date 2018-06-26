@@ -20,6 +20,7 @@ class env_reset(object):
         self.tool_num = env_config.tool_num
         self.lathe_num = env_config.lathe_num
         self.systec_num = env_config.systec_num
+        self.cnc_num = env_config.cnc_num
 
         self.x_length = env_config.x_length
         self.y_length = env_config.y_length
@@ -48,9 +49,9 @@ class env_reset(object):
 
 
 
-        print('--------------------------------------------------Start--------------------------------------------------')
-        subprocess.call('rosservice call /gazebo/set_model_state \'{model_state: { model_name: youbot' + ', pose: { position: { x: 0, y: 0 ,z: 10.0 }, orientation: {x: 0, y: 0, z: 0, w: 0 } }, twist: { linear: {x: 0.0 , y: 0 ,z: 0 } , angular: { x: 0.0 , y: 0 , z: 0.0 } } , reference_frame: world } }\'', shell=True)
-        print('--------------------------------------------------End--------------------------------------------------')
+        # print('--------------------------------------------------Start--------------------------------------------------')
+        # subprocess.call('rosservice call /gazebo/set_model_state \'{model_state: { model_name: youbot' + ', pose: { position: { x: 0, y: 0 ,z: 10.0 }, orientation: {x: 0, y: 0, z: 0, w: 0 } }, twist: { linear: {x: 0.0 , y: 0 ,z: 0 } , angular: { x: 0.0 , y: 0 , z: 0.0 } } , reference_frame: world } }\'', shell=True)
+        # print('--------------------------------------------------End--------------------------------------------------')
 
         return self.rand_coord_list[len(tools)]
 
@@ -60,6 +61,9 @@ class env_reset(object):
         
         for i in range(0, self.systec_num):
             subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + 'env_machine/' + self.tool_list[1][0] +'/model.sdf -sdf -model systec{0} -y -40 -x -40'.format(i+1), shell=True)
+        
+        for i in range(0, self.cnc_num):
+            subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + 'env_machine/' + self.tool_list[2][0] +'/model.sdf -sdf -model cnc{0} -y -40 -x -40'.format(i+1), shell=True)
 
         for i in range(0, self.floor_texture_num):
             subprocess.call('rosrun gazebo_ros spawn_model -file ' + self.gazebo_model_path + 'env_floor/' + self.floor_list[i] +'_floor/model.sdf -sdf -model floor{0} -y -50 -x -50'.format(i+1), shell=True)

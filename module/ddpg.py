@@ -9,8 +9,9 @@ class DDPG:
             sess_config.gpu_options.allow_growth=True
         else:
             sess_config=None
-        self.epsilon=0.4
+        self.epsilon=0.8
         self.action_dim=config.action_dim
+        self.action_scale=np.reshape(config.action_bounds[0],[1,config.action_dim])
         self.vector_dim=copy.copy(config.vector_dim)
         self.vector_dim[0]=-1
         self.rgbd_dim=copy.copy(config.rgbd_dim)
@@ -78,7 +79,7 @@ class DDPG:
         # action=self.a_scale* \
         #        np.tanh(action+self.epsilon*np.random.randn(1,self.action_dim))+ \
         #        self.a_mean
-        action=action+self.epsilon*np.random.randn(1,self.action_dim)
+        action=action+self.epsilon*self.action_scale*np.random.randn(1,self.action_dim)
         return np.reshape(action,[self.action_dim])
 
     def learn(self,batch):

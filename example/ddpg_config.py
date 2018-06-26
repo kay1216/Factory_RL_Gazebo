@@ -8,7 +8,7 @@ class Settings(object):
         self.vector_dim=[None,36]
         self.rgbd_dim=[None,480,640,7]
         self.action_dim=3
-        self.action_bounds=[[0.3,0.3,0.5],[-0.3,-0.3,-0.5]] # [max,min]
+        self.action_bounds=[[0.2,0.2,0.5],[-0.2,-0.2,-0.5]] # [max,min]
         self.gamma=0.9 # discount factor
         self.critic_learning_rate=1e-3
         self.actor_learning_rate=1e-4

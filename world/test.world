@@ -86,7 +86,7 @@
     <!-- A simple circuit -->
     <include>
       <uri>model://env_world/Test_ql_1</uri>
-      <pose>2.4 -2.1 0 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
     </include>
   </world>
 </sdf>

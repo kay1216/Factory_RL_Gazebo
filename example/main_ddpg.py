@@ -66,7 +66,6 @@ if __name__ == '__main__':
 
             # Pick an action based on the current state
             action = ddpg.chooseAction(state0)
-            print(action)
 
             # Execute the action and get feedback
             state1,reward,done,info = env.step(action)
